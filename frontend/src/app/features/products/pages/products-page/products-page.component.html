@@ -1,0 +1,18 @@
+<h2>Productos</h2>
+
+<div *ngIf="loading">Cargando...</div>
+
+<div *ngIf="!loading && errorMessage">
+  {{ errorMessage }}
+</div>
+
+<div *ngIf="!loading && !errorMessage && products.length === 0">
+  No hay productos visibles en Supabase.
+</div>
+
+<section *ngIf="!loading && !errorMessage && products.length > 0" class="products-grid">
+  <app-product-card
+    *ngFor="let product of products"
+    [product]="product">
+  </app-product-card>
+</section>
