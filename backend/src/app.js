@@ -9,14 +9,15 @@ const authRoutes = require('./routes/auth.routes');
 const app = express();
 
 app.use(helmet());
-app.use(express.json());
-app.use(cookieParser());
-app.use('/api/auth', authRoutes);
 
 app.use(cors({
   origin: process.env.FRONTEND_URL,
   credentials: true
 }));
+
+app.use(express.json());
+app.use(cookieParser());
+
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({
@@ -24,6 +25,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-
+app.use('/api/auth', authRoutes);
 
 module.exports = app;

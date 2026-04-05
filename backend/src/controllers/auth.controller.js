@@ -1,5 +1,7 @@
 const bcrypt = require('bcrypt');
 const pool = require('../config/db');
+const { login } = require('../services/auth.service');
+const { buildAuthCookieOptions } = require('../utils/cookies');
 
 const seedSuperAdmin = async (req, res) => {
   try {
@@ -64,6 +66,40 @@ const seedSuperAdmin = async (req, res) => {
   }
 };
 
+const loginController = async (req, res) => {
+  try {
+    const { identifier, password } = req.body;
+
+    if (!identifier || !password) {
+      return res.status(400).json({
+        message: 'identifier y password son obligatorios'
+      });
+    }
+
+    const result = await login({ identifier, password, req });
+
+    res.cookie('token', result.token, buildAuthCookieOptions());
+
+    return res.status(200).json({
+      message: 'Login exitoso',
+      user: result.user
+    });
+  } catch (error) {
+    return res.status(401).json({
+      message: error.message
+    });
+  }
+};
+
+const logoutController = async (req, res) => {
+  res.clearCookie('token');
+  return res.status(200).json({
+    message: 'Sesión cerrada'
+  });
+};
+
 module.exports = {
-  seedSuperAdmin
+  seedSuperAdmin,
+  loginController,
+  logoutController
 };
