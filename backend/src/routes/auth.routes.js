@@ -8,8 +8,8 @@ const {
 const { validateOrigin } = require('../middlewares/origin.middleware');
 const { loginRateLimiter } = require('../middlewares/timeLimit.middleware');
 
-router.post('/seed-superadmin', seedSuperAdmin);
-router.post('/login', validateOrigin, loginRateLimiter,loginController);
-router.post('/logout', validateOrigin,logoutController);
+router.post('/seed-superadmin', validateOrigin, seedSuperAdmin);
+router.post('/login', validateOrigin, loginRateLimiter, loginController);
+router.post('/logout', validateOrigin, logoutController);
 
 module.exports = router;

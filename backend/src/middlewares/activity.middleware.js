@@ -1,3 +1,5 @@
+const { buildActivityCookieOptions } = require('../utils/cookies');
+
 const checkInactivity = (req, res, next) => {
   // Lee la cookie que guarda la fecha de la ultima actividad del usuario.
   const lastActivity = req.cookies?.lastActivity;
@@ -15,8 +17,8 @@ const checkInactivity = (req, res, next) => {
 
   // Si pasaron mas de 5 minutos, elimina las cookies de sesion y bloquea el acceso.
   if (diff > 5 * 60 * 1000) {
-    res.clearCookie('token');
-    res.clearCookie('lastActivity');
+    res.clearCookie('token', { path: '/' });
+    res.clearCookie('lastActivity', { path: '/' });
 
     return res.status(401).json({
       message: 'Sesión expirada por inactividad'
@@ -24,12 +26,7 @@ const checkInactivity = (req, res, next) => {
   }
 
   // Si la sesion sigue activa, actualiza la cookie para reiniciar el contador de inactividad.
-  res.cookie('lastActivity', Date.now().toString(), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 5 * 60 * 1000
-  });
+  res.cookie('lastActivity', Date.now().toString(), buildActivityCookieOptions());
 
   // Permite que la peticion continúe hacia el siguiente middleware o controlador.
   next();

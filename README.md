@@ -1,24 +1,59 @@
 # WebSecurity
 
-Este repositorio ahora esta dividido en dos carpetas principales:
+Proyecto web con frontend en Angular y backend en Node.js/Express para gestion de autenticacion, usuarios, productos, roles y auditoria.
 
-- `frontend`: aplicacion Angular actual
-- `backend`: espacio reservado para la API o servicios del servidor
+## Modulos principales
 
-## Estructura
+- `frontend`: interfaz web del sistema
+- `backend`: API REST, autenticacion JWT, autorizacion por roles y auditoria
+
+## Estructura del proyecto
 
 ```text
 WebSecurity/
 |-- backend/
 |-- frontend/
-|-- .gitignore
+|-- README.md
 ```
 
-## Frontend
+## Tecnologias usadas
 
-La aplicacion Angular vive en `frontend/`.
+### Frontend
 
-Comandos utiles:
+- Angular
+- TypeScript
+
+### Backend
+
+- Node.js
+- Express
+- PostgreSQL
+- JWT
+- bcrypt
+
+## Funcionalidades implementadas
+
+- Inicio y cierre de sesion
+- Autenticacion con JWT en cookie `httpOnly`
+- Control de acceso por roles
+- Gestion de usuarios
+- Gestion de productos
+- Gestion de roles y permisos
+- Log de auditoria
+- Expiracion de sesion por inactividad
+- Rate limiting y bloqueo temporal en login
+- Validacion de `Origin/Referer` en rutas de escritura
+- Headers de seguridad con `helmet`
+
+## Requisitos
+
+- Node.js 18+
+- npm
+- PostgreSQL
+
+## Ejecutar el proyecto
+
+### Frontend
 
 ```bash
 cd frontend
@@ -26,6 +61,60 @@ npm install
 npm start
 ```
 
-## Backend
+### Backend
 
-La carpeta `backend/` queda lista para agregar tu servidor cuando lo necesites.
+```bash
+cd backend
+npm install
+npm start
+```
+
+Modo desarrollo del backend:
+
+```bash
+cd backend
+npm run dev
+```
+
+## Documentacion
+
+- Documentacion general de la API: [backend/README.md](backend/README.md)
+- El README del backend incluye:
+  - variables de entorno
+  - autenticacion
+  - roles
+  - endpoints disponibles
+  - ejemplos de bodies y respuestas
+
+## Endpoints principales
+
+Base URL del backend:
+
+```text
+http://localhost:3000/api
+```
+
+Modulos expuestos:
+
+- `/auth`
+- `/protected`
+- `/products`
+- `/users`
+- `/roles`
+- `/audit-logs`
+
+## Seguridad implementada
+
+- JWT validado en cada peticion protegida
+- Cookies `httpOnly`
+- Cookies con `sameSite`, `secure` y expiracion segun entorno
+- `helmet` con politicas explicitas
+- `cors` con credenciales
+- Validacion de `Origin/Referer` en rutas sensibles
+- Autorizacion por rol
+- Registro de auditoria de eventos criticos
+- Rate limiting y bloqueo temporal por multiples intentos fallidos
+
+## Objetivo del proyecto
+
+Centralizar la gestion segura de usuarios, productos y permisos dentro de una arquitectura separada entre frontend y backend, cumpliendo requerimientos funcionales y de seguridad del sistema.

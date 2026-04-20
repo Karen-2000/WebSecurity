@@ -1,10 +1,19 @@
 const bcrypt = require('bcrypt');
 const pool = require('../config/db');
 const { login } = require('../services/auth.service');
-const { buildAuthCookieOptions } = require('../utils/cookies');
+const {
+  buildAuthCookieOptions,
+  buildActivityCookieOptions
+} = require('../utils/cookies');
 
 const seedSuperAdmin = async (req, res) => {
   try {
+    if (process.env.ALLOW_SEED_SUPERADMIN !== 'true') {
+      return res.status(403).json({
+        message: 'La inicializacion de SuperAdmin esta deshabilitada'
+      });
+    }
+
     const { username, email, password } = req.body;
 
     if (!username || !email || !password) {
@@ -15,7 +24,7 @@ const seedSuperAdmin = async (req, res) => {
 
     if (password.length < 8) {
       return res.status(400).json({
-        message: 'La contraseña debe tener al menos 8 caracteres'
+        message: 'La contrasena debe tener al menos 8 caracteres'
       });
     }
 
@@ -79,13 +88,8 @@ const loginController = async (req, res) => {
     const result = await login({ identifier, password, req });
 
     res.cookie('token', result.token, buildAuthCookieOptions());
+    res.cookie('lastActivity', Date.now().toString(), buildActivityCookieOptions());
 
-    res.cookie('lastActivity', Date.now().toString(), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 5 * 60 * 1000
-    });
     return res.status(200).json({
       message: 'Login exitoso',
       user: result.user
@@ -98,11 +102,11 @@ const loginController = async (req, res) => {
 };
 
 const logoutController = async (req, res) => {
-  res.clearCookie('token');
-  res.clearCookie('lastActivity');
+  res.clearCookie('token', { path: '/' });
+  res.clearCookie('lastActivity', { path: '/' });
 
   return res.status(200).json({
-    message: 'Sesión cerrada'
+    message: 'Sesion cerrada'
   });
 };
 

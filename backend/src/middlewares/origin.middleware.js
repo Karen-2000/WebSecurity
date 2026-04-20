@@ -1,24 +1,36 @@
 const allowedOrigin = process.env.FRONTEND_URL;
 
-const validateOrigin = (req, res, next) => {
-  // Toma el valor del header Origin para saber desde qué sitio viene la petición.
-  const origin = req.get('origin');
+const isAllowedReferer = (referer) => (
+  referer === allowedOrigin || referer.startsWith(`${allowedOrigin}/`)
+);
 
-  // Si no existe Origin, permite continuar.
-  // Esto puede pasar en herramientas como Postman o en algunas peticiones del servidor.
-  if (!origin) {
+const validateOrigin = (req, res, next) => {
+  const origin = req.get('origin');
+  const referer = req.get('referer');
+
+  if (origin) {
+    if (origin !== allowedOrigin) {
+      return res.status(403).json({
+        message: 'Origen no permitido'
+      });
+    }
+
     return next();
   }
 
-  // Si el origen no coincide con el frontend permitido, bloquea el acceso.
-  if (origin !== allowedOrigin) {
-    return res.status(403).json({
-      message: 'Origen no permitido'
-    });
+  if (referer) {
+    if (!isAllowedReferer(referer)) {
+      return res.status(403).json({
+        message: 'Referer no permitido'
+      });
+    }
+
+    return next();
   }
 
-  // Si el origen es válido, la petición sigue hacia la siguiente función o ruta.
-  next();
+  return res.status(403).json({
+    message: 'Se requiere Origin o Referer valido'
+  });
 };
 
 module.exports = {

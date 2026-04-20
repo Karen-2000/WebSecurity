@@ -9,6 +9,7 @@ const {
   deleteProductController
 } = require('../controllers/products.controller');
 
+const { validateOrigin } = require('../middlewares/origin.middleware');
 const { authMiddleware } = require('../middlewares/auth.middleware');
 const { checkInactivity } = require('../middlewares/activity.middleware');
 const { authorizeRoles } = require('../middlewares/role.middleware');
@@ -31,6 +32,7 @@ router.get(
 
 router.post(
   '/',
+  validateOrigin,
   authMiddleware,
   checkInactivity,
   authorizeRoles('SuperAdmin', 'Registrador'),
@@ -39,6 +41,7 @@ router.post(
 
 router.put(
   '/:id',
+  validateOrigin,
   authMiddleware,
   checkInactivity,
   authorizeRoles('SuperAdmin', 'Registrador'),
@@ -47,6 +50,7 @@ router.put(
 
 router.delete(
   '/:id',
+  validateOrigin,
   authMiddleware,
   checkInactivity,
   authorizeRoles('SuperAdmin', 'Registrador'),

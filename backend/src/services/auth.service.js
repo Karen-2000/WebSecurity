@@ -3,6 +3,8 @@ const pool = require('../config/db');
 const { generateToken } = require('../utils/jwt');
 const { registerAuditEvent } = require('../utils/audit');
 
+const GENERIC_LOGIN_ERROR = 'Credenciales invalidas o acceso no disponible';
+
 const login = async ({ identifier, password, req }) => {
   const userResult = await pool.query(
     `
@@ -35,29 +37,29 @@ const login = async ({ identifier, password, req }) => {
       details: { reason: 'user_not_found', identifier }
     });
 
-    throw new Error('Credenciales inválidas');
+    throw new Error(GENERIC_LOGIN_ERROR);
   }
 
   const user = userResult.rows[0];
 
   if (!user.is_active) {
-    throw new Error('Usuario inactivo');
+    throw new Error(GENERIC_LOGIN_ERROR);
   }
 
-if (user.locked_until && new Date(user.locked_until) > new Date()) {
-  await registerAuditEvent({
-    userId: user.id,
-    eventType: 'RATE_LIMIT_TRIGGERED',
-    route: req.originalUrl,
-    method: req.method,
-    ipAddress: req.ip,
-    userAgent: req.get('user-agent'),
-    statusCode: 429,
-    details: { reason: 'user_locked', locked_until: user.locked_until }
-  });
+  if (user.locked_until && new Date(user.locked_until) > new Date()) {
+    await registerAuditEvent({
+      userId: user.id,
+      eventType: 'RATE_LIMIT_TRIGGERED',
+      route: req.originalUrl,
+      method: req.method,
+      ipAddress: req.ip,
+      userAgent: req.get('user-agent'),
+      statusCode: 429,
+      details: { reason: 'user_locked', locked_until: user.locked_until }
+    });
 
-  throw new Error('Usuario bloqueado temporalmente por múltiples intentos fallidos');
-}
+    throw new Error(GENERIC_LOGIN_ERROR);
+  }
 
   const passwordMatches = await bcrypt.compare(password, user.password_hash);
 
@@ -98,7 +100,7 @@ if (user.locked_until && new Date(user.locked_until) > new Date()) {
       details: { failed_login_count: newFailedCount }
     });
 
-    throw new Error('Credenciales inválidas');
+    throw new Error(GENERIC_LOGIN_ERROR);
   }
 
   await pool.query(
@@ -134,7 +136,6 @@ if (user.locked_until && new Date(user.locked_until) > new Date()) {
   const token = generateToken({
     sub: user.id,
     username: user.username,
-    email: user.email,
     role: user.role_name
   });
 
