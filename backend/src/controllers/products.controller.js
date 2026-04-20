@@ -7,6 +7,8 @@ const {
 } = require('../services/product.service');
 const { registerAuditEvent } = require('../utils/audit');
 
+const PRODUCT_CODE_REGEX = /^[A-Za-z0-9]+$/;
+
 const validateProductPayload = ({
   code,
   name,
@@ -15,17 +17,22 @@ const validateProductPayload = ({
   price,
   category
 }, isCreate = true) => {
-  if (isCreate && !code) return 'El código es obligatorio';
+  if (isCreate && !code) return 'El codigo es obligatorio';
   if (!name) return 'El nombre es obligatorio';
-  if (!description) return 'La descripción es obligatoria';
+  if (!description) return 'La descripcion es obligatoria';
   if (quantity === undefined || quantity === null) return 'La cantidad es obligatoria';
   if (price === undefined || price === null) return 'El precio es obligatorio';
-  if (!category) return 'La categoría es obligatoria';
+  if (!category) return 'La categoria es obligatoria';
 
-  if (isCreate && typeof code !== 'string') return 'El código debe ser texto';
+  if (isCreate && typeof code !== 'string') return 'El codigo debe ser texto';
   if (typeof name !== 'string') return 'El nombre debe ser texto';
-  if (typeof description !== 'string') return 'La descripción debe ser texto';
-  if (typeof category !== 'string') return 'La categoría debe ser texto';
+  if (typeof description !== 'string') return 'La descripcion debe ser texto';
+  if (typeof category !== 'string') return 'La categoria debe ser texto';
+
+  if (isCreate && code.trim().length === 0) return 'El codigo no puede estar vacio';
+  if (isCreate && !PRODUCT_CODE_REGEX.test(code.trim())) {
+    return 'El codigo debe ser alfanumerico';
+  }
 
   if (Number(quantity) < 0) return 'La cantidad no puede ser negativa';
   if (Number(price) < 0) return 'El precio no puede ser negativo';
@@ -68,6 +75,7 @@ const createProductController = async (req, res) => {
 
     const product = await createProduct({
       ...req.body,
+      code: req.body.code.trim(),
       quantity: Number(req.body.quantity),
       price: Number(req.body.price),
       userId: req.user.id

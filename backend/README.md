@@ -212,6 +212,13 @@ Body:
 }
 ```
 
+Reglas de validacion:
+
+- `code` es obligatorio
+- `code` debe ser alfanumerico
+- `quantity` no puede ser negativa
+- `price` no puede ser negativo
+
 #### `PUT /api/products/:id`
 
 Actualiza un producto.
@@ -234,6 +241,12 @@ Body:
   "category": "Tecnologia"
 }
 ```
+
+Reglas de validacion:
+
+- `name`, `description`, `quantity`, `price` y `category` son obligatorios
+- `quantity` no puede ser negativa
+- `price` no puede ser negativo
 
 #### `DELETE /api/products/:id`
 
