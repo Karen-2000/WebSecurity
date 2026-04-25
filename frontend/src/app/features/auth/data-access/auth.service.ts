@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { LoginRequest } from '../models/loginRequest.models';
 import { LoginResponse } from '../models/loginResponse.models';
-import { ProfileResponse } from '../models/session-user.model';
+import { SessionResponse } from '../models/session-user.model';
 import { environment } from '../../../../environments/environment';
 
 @Injectable({
@@ -25,9 +25,9 @@ export class AuthService {
     );
   }
 
-  getProfile(): Promise<ProfileResponse> {
+  getSession(): Promise<SessionResponse> {
     return firstValueFrom(
-      this.http.get<ProfileResponse>(`${this.apiUrl}/protected/profile`)
+      this.http.get<SessionResponse>(`${this.apiUrl}/auth/session`)
     );
   }
 }

@@ -1,11 +1,10 @@
 export interface SessionUser {
-  id: number;
+  id: string;
   username: string;
   email: string;
   role: string;
 }
 
-export interface ProfileResponse {
-  message: string;
-  user: SessionUser;
+export interface SessionResponse {
+  user: SessionUser | null;
 }

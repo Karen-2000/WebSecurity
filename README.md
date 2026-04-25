@@ -31,6 +31,10 @@ WebSecurity/
 - JWT
 - bcrypt
 
+## Justificacion del stack
+
+Se eligio Angular porque ofrece renderizado seguro por defecto mediante escaping de plantillas, separacion clara de componentes y soporte maduro para formularios, guards e interceptores HTTP. En el backend se eligio Node.js con Express por su madurez, ecosistema amplio de middlewares de seguridad y facilidad para construir APIs REST con autenticacion JWT. PostgreSQL se usa como base relacional por su soporte de integridad, consultas parametrizadas y estabilidad en aplicaciones transaccionales. Para seguridad, el stack integra `bcrypt`, `helmet`, `jsonwebtoken`, `express-rate-limit`, cookies `HttpOnly` y validacion de `Origin/Referer`.
+
 ## Funcionalidades implementadas
 
 - Inicio y cierre de sesion

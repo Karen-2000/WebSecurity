@@ -1,15 +1,17 @@
 import { Permission } from '../../roles/models/permission.model';
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
   email: string;
-  role_id: number;
+  role_id?: number;
   role_name?: string;
   is_active: boolean;
   last_login_at: string | null;
   created_at: string;
   updated_at: string;
+  last_edited_at?: string | null;
+  last_edited_by_username?: string | null;
   permissions: Permission[];
 }
 

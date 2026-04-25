@@ -1,13 +1,27 @@
 const pool = require('../config/db');
 
-const getAllProducts = async () => {
+const getAllProducts = async ({ includeInactive = false } = {}) => {
   const result = await pool.query(
     `
-    SELECT id, code, name, description, quantity, price, category, is_active, created_at, updated_at
-    FROM public.products
-    WHERE is_active = true
-    ORDER BY id DESC
-    `
+    SELECT
+      p.id,
+      p.code,
+      p.name,
+      p.description,
+      p.quantity,
+      p.price,
+      p.category,
+      p.is_active,
+      p.created_at,
+      p.updated_at,
+      p.updated_by,
+      editor.username AS updated_by_username
+    FROM public.products p
+    LEFT JOIN public.users editor ON editor.id = p.updated_by
+    WHERE ($1::boolean = true OR p.is_active = true)
+    ORDER BY p.id DESC
+    `,
+    [includeInactive]
   );
 
   return result.rows;
@@ -16,9 +30,22 @@ const getAllProducts = async () => {
 const getProductById = async (id) => {
   const result = await pool.query(
     `
-    SELECT id, code, name, description, quantity, price, category, is_active, created_at, updated_at
-    FROM public.products
-    WHERE id = $1
+    SELECT
+      p.id,
+      p.code,
+      p.name,
+      p.description,
+      p.quantity,
+      p.price,
+      p.category,
+      p.is_active,
+      p.created_at,
+      p.updated_at,
+      p.updated_by,
+      editor.username AS updated_by_username
+    FROM public.products p
+    LEFT JOIN public.users editor ON editor.id = p.updated_by
+    WHERE p.id = $1
     LIMIT 1
     `,
     [id]

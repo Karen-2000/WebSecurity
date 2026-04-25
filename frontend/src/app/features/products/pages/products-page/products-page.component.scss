@@ -83,10 +83,6 @@
   color: var(--color-ink);
 }
 
-.stat-card.accent {
-  background: linear-gradient(135deg, rgba(13, 148, 136, 0.14), rgba(13, 148, 136, 0.04));
-}
-
 .state-panel {
   display: flex;
   align-items: center;
@@ -179,6 +175,29 @@
   border: 1px solid rgba(19, 34, 56, 0.12);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.86);
+}
+
+.editor-form input[readonly] {
+  color: var(--color-muted);
+  cursor: default;
+}
+
+.money-field {
+  position: relative;
+}
+
+.money-field input {
+  padding-left: 34px;
+}
+
+.money-field__symbol {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-muted);
+  font-weight: 700;
+  pointer-events: none;
 }
 
 .editor-form textarea {

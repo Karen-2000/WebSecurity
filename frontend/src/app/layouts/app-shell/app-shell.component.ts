@@ -21,9 +21,12 @@ export class AppShellComponent {
     }
 
     const items = [
-      { label: 'Productos', path: '/products' },
       { label: 'Usuarios', path: '/users' }
     ];
+
+    if (user.role === 'Auditor' || user.role === 'Registrador') {
+      items.unshift({ label: 'Productos', path: '/products' });
+    }
 
     if (user.role === 'SuperAdmin') {
       items.push(

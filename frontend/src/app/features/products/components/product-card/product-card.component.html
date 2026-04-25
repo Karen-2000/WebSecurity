@@ -31,6 +31,14 @@
         <span>Creado</span>
         <strong>{{ product.created_at | date:'dd/MM/yyyy' }}</strong>
       </div>
+      <div>
+        <span>Ultima edicion</span>
+        <strong>{{ product.updated_at ? (product.updated_at | date:'dd/MM/yyyy HH:mm') : 'Sin registro' }}</strong>
+      </div>
+      <div>
+        <span>Editado por</span>
+        <strong>{{ product.updated_by_username || 'Sin registro' }}</strong>
+      </div>
     </div>
 
     <div class="product-card__actions" *ngIf="canManage">

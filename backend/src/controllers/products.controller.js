@@ -9,6 +9,14 @@ const { registerAuditEvent } = require('../utils/audit');
 
 const PRODUCT_CODE_REGEX = /^[A-Za-z0-9]+$/;
 
+const isValidNumber = (value) => (
+  typeof value === 'number' || typeof value === 'string'
+) && Number.isFinite(Number(value));
+
+const canViewInactiveProducts = (requestUser) => {
+  return requestUser?.role === 'SuperAdmin';
+};
+
 const validateProductPayload = ({
   code,
   name,
@@ -34,6 +42,9 @@ const validateProductPayload = ({
     return 'El codigo debe ser alfanumerico';
   }
 
+  if (!isValidNumber(quantity)) return 'La cantidad debe ser un numero valido';
+  if (!isValidNumber(price)) return 'El precio debe ser un numero valido';
+
   if (Number(quantity) < 0) return 'La cantidad no puede ser negativa';
   if (Number(price) < 0) return 'El precio no puede ser negativo';
 
@@ -42,7 +53,10 @@ const validateProductPayload = ({
 
 const getProductsController = async (req, res) => {
   try {
-    const products = await getAllProducts();
+    const products = await getAllProducts({
+      includeInactive: canViewInactiveProducts(req.user)
+    });
+
     return res.status(200).json(products);
   } catch (error) {
     console.error('Error listando productos:', error);
@@ -55,6 +69,10 @@ const getProductController = async (req, res) => {
     const product = await getProductById(req.params.id);
 
     if (!product) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+
+    if (!canViewInactiveProducts(req.user) && !product.is_active) {
       return res.status(404).json({ message: 'Producto no encontrado' });
     }
 
@@ -118,6 +136,10 @@ const updateProductController = async (req, res) => {
       return res.status(404).json({ message: 'Producto no encontrado' });
     }
 
+    if (!canViewInactiveProducts(req.user) && !existing.is_active) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+
     const product = await updateProduct(req.params.id, {
       ...req.body,
       quantity: Number(req.body.quantity),
@@ -152,6 +174,10 @@ const deleteProductController = async (req, res) => {
     const existing = await getProductById(req.params.id);
 
     if (!existing) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+
+    if (!canViewInactiveProducts(req.user) && !existing.is_active) {
       return res.status(404).json({ message: 'Producto no encontrado' });
     }
 

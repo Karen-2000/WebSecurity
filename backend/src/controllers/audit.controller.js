@@ -2,6 +2,7 @@ const { getAuditLogs } = require('../services/audit.service');
 
 const DEFAULT_LIMIT = 100;
 const MAX_LIMIT = 500;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const buildDate = (value) => {
   if (!value) {
@@ -10,6 +11,17 @@ const buildDate = (value) => {
 
   const parsedDate = new Date(value);
   return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+};
+
+const buildEndOfDay = (value) => {
+  const date = buildDate(value);
+
+  if (!date) {
+    return null;
+  }
+
+  date.setUTCHours(23, 59, 59, 999);
+  return date;
 };
 
 const validateAuditFilters = ({
@@ -26,14 +38,14 @@ const validateAuditFilters = ({
     };
   }
 
-  if (user_id !== undefined && (!Number.isInteger(Number(user_id)) || Number(user_id) <= 0)) {
+  if (user_id !== undefined && !UUID_REGEX.test(user_id)) {
     return {
-      error: 'user_id debe ser un entero positivo'
+      error: 'user_id debe ser un UUID valido'
     };
   }
 
   const dateFrom = buildDate(date_from);
-  const dateTo = buildDate(date_to);
+  const dateTo = buildEndOfDay(date_to);
 
   if (date_from && !dateFrom) {
     return {
@@ -55,9 +67,9 @@ const validateAuditFilters = ({
 
   return {
     filters: {
-      userId: user_id === undefined ? undefined : Number(user_id),
+      userId: user_id,
       dateFrom: date_from,
-      dateTo: date_to,
+      dateTo,
       limit: normalizedLimit
     }
   };

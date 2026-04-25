@@ -48,7 +48,8 @@ export class LoginPageComponent {
       const response = await this.authService.login({ identifier, password: this.form.password });
       this.sessionService.setSession(response.user);
       this.successMessage = `Bienvenida, ${response.user.username}`;
-      await this.router.navigate(['/products']);
+      const landingRoute = response.user.role === 'SuperAdmin' ? '/users' : '/products';
+      await this.router.navigate([landingRoute]);
     } catch (error: any) {
       this.errorMessage =
         error?.error?.message || 'No se pudo iniciar sesión';

@@ -58,7 +58,7 @@ export class SessionService {
 
   private async initializeSession(): Promise<void> {
     try {
-      const response = await this.authService.getProfile();
+      const response = await this.authService.getSession();
       this.currentUserSignal.set(response.user);
     } catch {
       this.currentUserSignal.set(null);

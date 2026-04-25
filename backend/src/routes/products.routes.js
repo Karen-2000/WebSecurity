@@ -18,7 +18,7 @@ router.get(
   '/',
   authMiddleware,
   checkInactivity,
-  authorizeRoles('SuperAdmin', 'Auditor', 'Registrador'),
+  authorizeRoles('Auditor', 'Registrador'),
   getProductsController
 );
 
@@ -26,7 +26,7 @@ router.get(
   '/:id',
   authMiddleware,
   checkInactivity,
-  authorizeRoles('SuperAdmin', 'Auditor', 'Registrador'),
+  authorizeRoles('Auditor', 'Registrador'),
   getProductController
 );
 
@@ -35,7 +35,7 @@ router.post(
   validateOrigin,
   authMiddleware,
   checkInactivity,
-  authorizeRoles('SuperAdmin', 'Registrador'),
+  authorizeRoles('Registrador'),
   createProductController
 );
 
@@ -44,7 +44,7 @@ router.put(
   validateOrigin,
   authMiddleware,
   checkInactivity,
-  authorizeRoles('SuperAdmin', 'Registrador'),
+  authorizeRoles('Registrador'),
   updateProductController
 );
 
@@ -53,7 +53,7 @@ router.delete(
   validateOrigin,
   authMiddleware,
   checkInactivity,
-  authorizeRoles('SuperAdmin', 'Registrador'),
+  authorizeRoles('Registrador'),
   deleteProductController
 );
 

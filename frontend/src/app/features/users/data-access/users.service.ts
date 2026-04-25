@@ -19,11 +19,11 @@ export class UsersService {
     return firstValueFrom(this.http.post<User>(this.apiUrl, payload));
   }
 
-  updateUser(id: number, payload: UpdateUserPayload): Promise<User> {
+  updateUser(id: string, payload: UpdateUserPayload): Promise<User> {
     return firstValueFrom(this.http.put<User>(`${this.apiUrl}/${id}`, payload));
   }
 
-  deleteUser(id: number): Promise<{ message: string }> {
+  deleteUser(id: string): Promise<{ message: string }> {
     return firstValueFrom(
       this.http.delete<{ message: string }>(`${this.apiUrl}/${id}`)
     );

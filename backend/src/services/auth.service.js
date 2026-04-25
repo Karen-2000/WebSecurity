@@ -43,19 +43,50 @@ const login = async ({ identifier, password, req }) => {
   const user = userResult.rows[0];
 
   if (!user.is_active) {
+    await pool.query(
+      `
+      INSERT INTO public.login_attempts (username, email, ip_address, was_successful, user_agent)
+      VALUES ($1,$2,$3,false,$4)
+      `,
+      [user.username, user.email, req.ip, req.get('user-agent')]
+    );
+
+    await registerAuditEvent({
+      userId: user.id,
+      eventType: 'LOGIN_FAILED',
+      route: req.originalUrl,
+      method: req.method,
+      ipAddress: req.ip,
+      userAgent: req.get('user-agent'),
+      statusCode: 401,
+      details: { reason: 'inactive_user' }
+    });
+
     throw new Error(GENERIC_LOGIN_ERROR);
   }
 
   if (user.locked_until && new Date(user.locked_until) > new Date()) {
+    await pool.query(
+      `
+      INSERT INTO public.login_attempts (username, email, ip_address, was_successful, user_agent)
+      VALUES ($1,$2,$3,false,$4)
+      `,
+      [user.username, user.email, req.ip, req.get('user-agent')]
+    );
+
     await registerAuditEvent({
       userId: user.id,
-      eventType: 'RATE_LIMIT_TRIGGERED',
+      eventType: 'LOGIN_FAILED',
       route: req.originalUrl,
       method: req.method,
       ipAddress: req.ip,
       userAgent: req.get('user-agent'),
       statusCode: 429,
-      details: { reason: 'user_locked', locked_until: user.locked_until }
+      details: {
+        reason: 'user_locked',
+        rate_limit_triggered: true,
+        locked_until: user.locked_until
+      }
     });
 
     throw new Error(GENERIC_LOGIN_ERROR);
@@ -91,13 +122,16 @@ const login = async ({ identifier, password, req }) => {
 
     await registerAuditEvent({
       userId: user.id,
-      eventType: newFailedCount >= 5 ? 'RATE_LIMIT_TRIGGERED' : 'LOGIN_FAILED',
+      eventType: 'LOGIN_FAILED',
       route: req.originalUrl,
       method: req.method,
       ipAddress: req.ip,
       userAgent: req.get('user-agent'),
       statusCode: 401,
-      details: { failed_login_count: newFailedCount }
+      details: {
+        failed_login_count: newFailedCount,
+        rate_limit_triggered: newFailedCount >= 5
+      }
     });
 
     throw new Error(GENERIC_LOGIN_ERROR);
@@ -136,6 +170,7 @@ const login = async ({ identifier, password, req }) => {
   const token = generateToken({
     sub: user.id,
     username: user.username,
+    email: user.email,
     role: user.role_name
   });
 

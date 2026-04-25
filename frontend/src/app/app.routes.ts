@@ -22,6 +22,8 @@ export const routes: Routes = [
     children: [
       {
         path: 'products',
+        canActivate: [roleGuard],
+        data: { roles: ['Auditor', 'Registrador'], redirectTo: '/users' },
         loadComponent: () =>
           import('./features/products/pages/products-page/products-page.component').then(
             (m) => m.ProductsPageComponent

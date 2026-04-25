@@ -3,11 +3,12 @@ const FIVE_MINUTES_IN_MS = 5 * 60 * 1000;
 
 const buildCookieBaseOptions = (maxAge) => {
   const isProduction = process.env.NODE_ENV === 'production';
+  const forceSecureCookies = process.env.COOKIE_SECURE === 'true';
 
   return {
     httpOnly: true,
     sameSite: isProduction ? 'none' : 'lax',
-    secure: isProduction,
+    secure: isProduction || forceSecureCookies,
     maxAge,
     path: '/'
   };

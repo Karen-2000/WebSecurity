@@ -20,6 +20,7 @@ JWT_SECRET=tu_secreto
 JWT_EXPIRES_IN=1h
 BCRYPT_ROUNDS=12
 ALLOW_SEED_SUPERADMIN=false
+COOKIE_SECURE=false
 DATABASE_URL=postgres://usuario:password@host:5432/db
 ```
 
@@ -63,6 +64,7 @@ Detalles importantes:
 - El login tiene rate limit y bloqueo temporal por multiples intentos fallidos
 - El JWT usa `HS256`, expiracion y validacion de `issuer`/`audience`
 - La cookie `token` y la cookie `lastActivity` usan `httpOnly`, `sameSite`, `secure` segun entorno y `path=/`
+- Para despliegues HTTPS, usar `NODE_ENV=production` o `COOKIE_SECURE=true` para activar el flag `Secure` en cookies
 
 ## Seguridad adicional
 
@@ -152,6 +154,18 @@ Cierra sesion y limpia cookies.
 
 Requiere `Origin` o `Referer` valido.
 
+#### `GET /api/auth/session`
+
+Consulta la sesion actual sin generar un `401` cuando no hay usuario autenticado.
+
+Respuesta sin sesion:
+
+```json
+{
+  "user": null
+}
+```
+
 ### Protected
 
 #### `GET /api/protected/profile`
@@ -174,7 +188,6 @@ Lista productos activos.
 
 Roles:
 
-- `SuperAdmin`
 - `Auditor`
 - `Registrador`
 
@@ -184,7 +197,6 @@ Obtiene un producto por id.
 
 Roles:
 
-- `SuperAdmin`
 - `Auditor`
 - `Registrador`
 
@@ -194,7 +206,6 @@ Crea un producto.
 
 Roles:
 
-- `SuperAdmin`
 - `Registrador`
 
 Requiere `Origin` o `Referer` valido.
@@ -203,7 +214,7 @@ Body:
 
 ```json
 {
-  "code": "P-001",
+  "code": "P001",
   "name": "Laptop",
   "description": "Equipo de trabajo",
   "quantity": 10,
@@ -216,8 +227,8 @@ Reglas de validacion:
 
 - `code` es obligatorio
 - `code` debe ser alfanumerico
-- `quantity` no puede ser negativa
-- `price` no puede ser negativo
+- `quantity` debe ser numerico y no puede ser negativo
+- `price` debe ser numerico y no puede ser negativo
 
 #### `PUT /api/products/:id`
 
@@ -225,7 +236,6 @@ Actualiza un producto.
 
 Roles:
 
-- `SuperAdmin`
 - `Registrador`
 
 Requiere `Origin` o `Referer` valido.
@@ -245,8 +255,8 @@ Body:
 Reglas de validacion:
 
 - `name`, `description`, `quantity`, `price` y `category` son obligatorios
-- `quantity` no puede ser negativa
-- `price` no puede ser negativo
+- `quantity` debe ser numerico y no puede ser negativo
+- `price` debe ser numerico y no puede ser negativo
 
 #### `DELETE /api/products/:id`
 
@@ -254,7 +264,6 @@ Elimina logicamente un producto.
 
 Roles:
 
-- `SuperAdmin`
 - `Registrador`
 
 Requiere `Origin` o `Referer` valido.
@@ -263,7 +272,7 @@ Requiere `Origin` o `Referer` valido.
 
 #### `GET /api/users`
 
-Lista usuarios con sus permisos.
+Lista usuarios con username, email, rol, permisos y fecha/hora del ultimo login.
 
 Roles:
 
@@ -273,7 +282,7 @@ Roles:
 
 #### `GET /api/users/:id`
 
-Obtiene un usuario con sus permisos.
+Obtiene un usuario con username, email, rol, permisos y fecha/hora del ultimo login.
 
 Roles:
 
@@ -456,7 +465,7 @@ GET /api/audit-logs?event_type=LOGIN_SUCCESS&limit=50
 Validaciones:
 
 - `limit` debe estar entre `1` y `500`
-- `user_id` debe ser entero positivo
+- `user_id` debe ser un UUID valido
 - `date_from` y `date_to` deben ser fechas validas
 - `date_from` no puede ser mayor que `date_to`
 
@@ -467,8 +476,8 @@ Validaciones:
 - `helmet` con configuracion explicita
 - `cors` con `credentials: true`
 - validacion de `Origin/Referer` en rutas sensibles
-- rate limit en login
-- bloqueo temporal por multiples intentos fallidos
+- rate limit en login con auditoria del bloqueo por IP
+- bloqueo temporal por multiples intentos fallidos de usuario
 - cierre de sesion por inactividad
 - autorizacion por rol
 - auditoria de eventos de seguridad y cambios criticos

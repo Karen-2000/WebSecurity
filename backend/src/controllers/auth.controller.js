@@ -5,10 +5,26 @@ const {
   buildAuthCookieOptions,
   buildActivityCookieOptions
 } = require('../utils/cookies');
+const { verifyToken } = require('../utils/jwt');
+const { registerAuditEvent } = require('../utils/audit');
+
+const INACTIVITY_LIMIT_MS = 5 * 60 * 1000;
 
 const seedSuperAdmin = async (req, res) => {
   try {
     if (process.env.ALLOW_SEED_SUPERADMIN !== 'true') {
+      await registerAuditEvent({
+        eventType: 'ACCESS_DENIED',
+        route: req.originalUrl,
+        method: req.method,
+        ipAddress: req.ip,
+        userAgent: req.get('user-agent'),
+        statusCode: 403,
+        details: {
+          reason: 'seed_superadmin_disabled'
+        }
+      });
+
       return res.status(403).json({
         message: 'La inicializacion de SuperAdmin esta deshabilitada'
       });
@@ -80,6 +96,19 @@ const loginController = async (req, res) => {
     const { identifier, password } = req.body;
 
     if (!identifier || !password) {
+      await registerAuditEvent({
+        eventType: 'LOGIN_FAILED',
+        route: req.originalUrl,
+        method: req.method,
+        ipAddress: req.ip,
+        userAgent: req.get('user-agent'),
+        statusCode: 400,
+        details: {
+          reason: 'missing_credentials',
+          identifier: identifier || null
+        }
+      });
+
       return res.status(400).json({
         message: 'identifier y password son obligatorios'
       });
@@ -110,8 +139,56 @@ const logoutController = async (req, res) => {
   });
 };
 
+const sessionController = async (req, res) => {
+  const token = req.cookies?.token;
+  const lastActivity = req.cookies?.lastActivity;
+
+  if (!token || !lastActivity) {
+    res.clearCookie('token', { path: '/' });
+    res.clearCookie('lastActivity', { path: '/' });
+
+    return res.status(200).json({
+      user: null
+    });
+  }
+
+  const elapsedTime = Date.now() - Number(lastActivity);
+
+  if (!Number.isFinite(elapsedTime) || elapsedTime > INACTIVITY_LIMIT_MS) {
+    res.clearCookie('token', { path: '/' });
+    res.clearCookie('lastActivity', { path: '/' });
+
+    return res.status(200).json({
+      user: null
+    });
+  }
+
+  try {
+    const decoded = verifyToken(token);
+
+    res.cookie('lastActivity', Date.now().toString(), buildActivityCookieOptions());
+
+    return res.status(200).json({
+      user: {
+        id: decoded.sub,
+        username: decoded.username,
+        email: decoded.email,
+        role: decoded.role
+      }
+    });
+  } catch (error) {
+    res.clearCookie('token', { path: '/' });
+    res.clearCookie('lastActivity', { path: '/' });
+
+    return res.status(200).json({
+      user: null
+    });
+  }
+};
+
 module.exports = {
   seedSuperAdmin,
   loginController,
-  logoutController
+  logoutController,
+  sessionController
 };

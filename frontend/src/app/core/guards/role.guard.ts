@@ -20,5 +20,9 @@ export const roleGuard: CanActivateFn = async (route) => {
     return true;
   }
 
-  return router.createUrlTree(['/products']);
+  const redirectTo = typeof route.data['redirectTo'] === 'string'
+    ? route.data['redirectTo']
+    : '/products';
+
+  return router.createUrlTree([redirectTo]);
 };

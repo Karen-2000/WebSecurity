@@ -26,7 +26,7 @@ export class UsersPageComponent implements OnInit {
   saving = false;
   errorMessage = '';
   successMessage = '';
-  editingUserId: number | null = null;
+  editingUserId: string | null = null;
   form = this.buildEmptyForm();
 
   async ngOnInit(): Promise<void> {
@@ -35,6 +35,14 @@ export class UsersPageComponent implements OnInit {
 
   get isSuperAdmin(): boolean {
     return this.sessionService.hasAnyRole('SuperAdmin');
+  }
+
+  get canViewUserRoles(): boolean {
+    return this.sessionService.hasAnyRole('SuperAdmin', 'Auditor', 'Registrador');
+  }
+
+  get canViewUserPermissions(): boolean {
+    return this.sessionService.hasAnyRole('SuperAdmin', 'Auditor', 'Registrador');
   }
 
   get activeUsersCount(): number {
@@ -80,7 +88,7 @@ export class UsersPageComponent implements OnInit {
       username: user.username,
       email: user.email,
       password: '',
-      roleId: user.role_id,
+      roleId: user.role_id ?? null,
       isActive: user.is_active
     };
     this.successMessage = '';

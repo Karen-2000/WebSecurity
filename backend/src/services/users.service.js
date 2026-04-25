@@ -12,9 +12,21 @@ const getAllUsers = async () => {
       u.last_login_at,
       u.created_at,
       u.updated_at,
-      r.name AS role_name
+      r.name AS role_name,
+      last_edit.created_at AS last_edited_at,
+      editor.username AS last_edited_by_username
     FROM public.users u
     JOIN public.roles r ON r.id = u.role_id
+    LEFT JOIN LATERAL (
+      SELECT user_id, created_at
+      FROM public.audit_logs
+      WHERE entity_type = 'users'
+        AND entity_id = u.id::text
+        AND event_type IN ('USER_CREATED', 'USER_UPDATED', 'USER_DELETED')
+      ORDER BY created_at DESC
+      LIMIT 1
+    ) last_edit ON true
+    LEFT JOIN public.users editor ON editor.id = last_edit.user_id
     ORDER BY u.created_at DESC
     `
   );
@@ -34,9 +46,21 @@ const getUserById = async (id) => {
       u.last_login_at,
       u.created_at,
       u.updated_at,
-      r.name AS role_name
+      r.name AS role_name,
+      last_edit.created_at AS last_edited_at,
+      editor.username AS last_edited_by_username
     FROM public.users u
     JOIN public.roles r ON r.id = u.role_id
+    LEFT JOIN LATERAL (
+      SELECT user_id, created_at
+      FROM public.audit_logs
+      WHERE entity_type = 'users'
+        AND entity_id = u.id::text
+        AND event_type IN ('USER_CREATED', 'USER_UPDATED', 'USER_DELETED')
+      ORDER BY created_at DESC
+      LIMIT 1
+    ) last_edit ON true
+    LEFT JOIN public.users editor ON editor.id = last_edit.user_id
     WHERE u.id = $1
     LIMIT 1
     `,

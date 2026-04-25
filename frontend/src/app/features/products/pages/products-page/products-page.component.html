@@ -10,16 +10,8 @@
         <strong>{{ products.length }}</strong>
       </article>
       <article class="stat-card">
-        <span>Productos activos</span>
-        <strong>{{ activeProductsCount }}</strong>
-      </article>
-      <article class="stat-card">
         <span>Unidades en stock</span>
         <strong>{{ totalUnits }}</strong>
-      </article>
-      <article class="stat-card accent">
-        <span>Categorias</span>
-        <strong>{{ categoryCount }}</strong>
       </article>
     </div>
   </header>
@@ -94,12 +86,15 @@
 
       <label>
         <span>Precio</span>
-        <input name="price" [(ngModel)]="form.price" type="number" min="0" step="0.01" required />
+        <div class="money-field">
+          <span class="money-field__symbol" aria-hidden="true">$</span>
+          <input name="price" [(ngModel)]="form.price" type="number" min="0" step="0.01" required />
+        </div>
       </label>
 
       <label class="editor-form__wide">
         <span>Categoria</span>
-        <input name="category" [(ngModel)]="form.category" placeholder="Tecnologia" required />
+        <input name="category" [(ngModel)]="form.category" readonly />
       </label>
 
       <div class="editor-form__actions editor-form__wide">
@@ -118,9 +113,6 @@
         <p class="eyebrow">VISTA ACTIVA</p>
         <h2>Explora el inventario</h2>
       </div>
-      <p class="collection-note">
-        {{ activeProductsCount }} activos, {{ products.length - activeProductsCount }} inactivos.
-      </p>
     </div>
 
     <section class="products-grid">

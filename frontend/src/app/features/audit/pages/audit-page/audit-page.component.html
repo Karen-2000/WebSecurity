@@ -28,10 +28,10 @@
       <button type="button" class="ghost-button" (click)="resetFilters()">Limpiar</button>
     </div>
 
-    <form class="filters-form" (ngSubmit)="applyFilters()">
+    <form class="filters-form">
       <label>
         <span>Tipo de evento</span>
-        <select name="event_type" [(ngModel)]="filters.event_type">
+        <select name="event_type" [value]="filters.event_type" (change)="onFilterChange('event_type', $any($event.target).value)">
           <option value="">Todos</option>
           <option *ngFor="let eventType of eventTypes" [value]="eventType">{{ eventType }}</option>
         </select>
@@ -39,30 +39,21 @@
 
       <label>
         <span>Usuario</span>
-        <select name="user_id" [(ngModel)]="filters.user_id">
-          <option [ngValue]="null">Todos</option>
-          <option *ngFor="let user of users" [ngValue]="user.id">{{ user.username }}</option>
+        <select name="user_id" [value]="filters.user_id" (change)="onFilterChange('user_id', $any($event.target).value)">
+          <option value="">Todos</option>
+          <option *ngFor="let user of users" [value]="user.id">{{ user.username }}</option>
         </select>
       </label>
 
       <label>
         <span>Fecha desde</span>
-        <input name="date_from" type="date" [(ngModel)]="filters.date_from" />
+        <input name="date_from" type="date" [value]="filters.date_from" (change)="onFilterChange('date_from', $any($event.target).value)" />
       </label>
 
       <label>
         <span>Fecha hasta</span>
-        <input name="date_to" type="date" [(ngModel)]="filters.date_to" />
+        <input name="date_to" type="date" [value]="filters.date_to" (change)="onFilterChange('date_to', $any($event.target).value)" />
       </label>
-
-      <label>
-        <span>Limite</span>
-        <input name="limit" type="number" min="1" max="500" [(ngModel)]="filters.limit" />
-      </label>
-
-      <button type="submit" [disabled]="filtersLoading">
-        {{ filtersLoading ? 'Filtrando...' : 'Aplicar filtros' }}
-      </button>
     </form>
   </section>
 

@@ -52,6 +52,45 @@ const validateRoleId = async (roleId) => {
   return role ? null : 'Rol no encontrado';
 };
 
+const canViewUserRoles = (requestUser) => {
+  return ['SuperAdmin', 'Auditor', 'Registrador'].includes(requestUser?.role);
+};
+
+const canViewUserPermissions = (requestUser) => {
+  return ['SuperAdmin', 'Auditor', 'Registrador'].includes(requestUser?.role);
+};
+
+const canViewInactiveUsers = (requestUser) => {
+  return requestUser?.role === 'SuperAdmin';
+};
+
+const serializeUserForViewer = (user, requestUser) => {
+  const {
+    role_id,
+    role_name,
+    permissions,
+    ...safeUser
+  } = user;
+
+  const visibleUser = canViewUserRoles(requestUser)
+    ? {
+        ...safeUser,
+        role_id,
+        role_name
+      }
+    : safeUser;
+
+  return canViewUserPermissions(requestUser)
+    ? {
+        ...visibleUser,
+        permissions: permissions || []
+      }
+    : {
+        ...visibleUser,
+        permissions: []
+      };
+};
+
 const hashPasswordIfProvided = async (password) => {
   if (password === undefined || password === null || password === '') {
     return {
@@ -82,12 +121,15 @@ const hashPasswordIfProvided = async (password) => {
 const getUsersController = async (req, res) => {
   try {
     const users = await getAllUsers();
+    const visibleUsers = canViewInactiveUsers(req.user)
+      ? users
+      : users.filter((user) => user.is_active);
 
     const usersWithPermissions = await Promise.all(
-      users.map(async (user) => {
+      visibleUsers.map(async (user) => {
         const permissions = await getUserPermissions(user.id);
         return {
-          ...user,
+          ...serializeUserForViewer(user, req.user),
           permissions
         };
       })
@@ -108,10 +150,14 @@ const getUserController = async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
+    if (!canViewInactiveUsers(req.user) && !user.is_active) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
     const permissions = await getUserPermissions(user.id);
 
     return res.status(200).json({
-      ...user,
+      ...serializeUserForViewer(user, req.user),
       permissions
     });
   } catch (error) {
@@ -209,6 +255,7 @@ const updateUserController = async (req, res) => {
       return res.status(404).json({ message: roleError });
     }
 
+    const newRole = await getRoleById(req.body.roleId);
     const { error: passwordError, passwordHash } = await hashPasswordIfProvided(req.body.password);
 
     if (passwordError) {
@@ -240,6 +287,28 @@ const updateUserController = async (req, res) => {
         email: user.email
       }
     });
+
+    if (String(existingUser.role_id) !== String(user.role_id)) {
+      await registerAuditEvent({
+        userId: req.user.id,
+        eventType: 'ROLE_CHANGED',
+        entityType: 'users',
+        entityId: String(user.id),
+        route: req.originalUrl,
+        method: req.method,
+        ipAddress: req.ip,
+        userAgent: req.get('user-agent'),
+        statusCode: 200,
+        details: {
+          action: 'change_user_role',
+          username: user.username,
+          previous_role_id: existingUser.role_id,
+          previous_role_name: existingUser.role_name,
+          new_role_id: user.role_id,
+          new_role_name: newRole?.name || null
+        }
+      });
+    }
 
     return res.status(200).json(user);
   } catch (error) {

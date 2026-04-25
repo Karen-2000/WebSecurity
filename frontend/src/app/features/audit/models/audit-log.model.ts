@@ -1,6 +1,6 @@
 export interface AuditLog {
   id: number;
-  user_id: number | null;
+  user_id: string | null;
   event_type: string;
   entity_type: string;
   entity_id: string | null;
@@ -15,7 +15,7 @@ export interface AuditLog {
 
 export interface AuditFilters {
   event_type?: string;
-  user_id?: number;
+  user_id?: string;
   date_from?: string;
   date_to?: string;
   limit?: number;

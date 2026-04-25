@@ -9,6 +9,7 @@ import { sanitizeInput } from '../../../../core/utils/sanitize.util';
 
 const PRODUCT_DESCRIPTION_MIN_LENGTH = 10;
 const PRODUCT_DESCRIPTION_MAX_LENGTH = 1500;
+const DEFAULT_PRODUCT_CATEGORY = 'Tecnologia';
 
 @Component({
   selector: 'app-products-page',
@@ -36,7 +37,7 @@ export class ProductsPageComponent implements OnInit {
   }
 
   get canManageProducts(): boolean {
-    return this.sessionService.hasAnyRole('SuperAdmin', 'Registrador');
+    return this.sessionService.hasAnyRole('Registrador');
   }
 
   async loadProducts(): Promise<void> {
@@ -64,7 +65,7 @@ export class ProductsPageComponent implements OnInit {
       description: product.description,
       quantity: product.quantity,
       price: product.price,
-      category: product.category
+      category: product.category || DEFAULT_PRODUCT_CATEGORY
     };
     this.errorMessage = '';
     this.successMessage = '';
@@ -86,7 +87,7 @@ export class ProductsPageComponent implements OnInit {
       description: sanitizeInput(this.form.description),
       quantity: Number(this.form.quantity),
       price: Number(this.form.price),
-      category: sanitizeInput(this.form.category)
+      category: DEFAULT_PRODUCT_CATEGORY
     };
 
     const validationError = this.validateProductPayload(productPayload);
@@ -163,16 +164,8 @@ export class ProductsPageComponent implements OnInit {
     }
   }
 
-  get activeProductsCount(): number {
-    return this.products.filter((product) => product.is_active).length;
-  }
-
   get totalUnits(): number {
     return this.products.reduce((total, product) => total + product.quantity, 0);
-  }
-
-  get categoryCount(): number {
-    return new Set(this.products.map((product) => product.category)).size;
   }
 
   private buildEmptyForm() {
@@ -182,7 +175,7 @@ export class ProductsPageComponent implements OnInit {
       description: '',
       quantity: 0,
       price: 0,
-      category: ''
+      category: DEFAULT_PRODUCT_CATEGORY
     };
   }
 

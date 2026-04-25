@@ -9,6 +9,8 @@ export interface Product {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  updated_by?: number | null;
+  updated_by_username?: string | null;
 }
 
 export interface ProductPayload {

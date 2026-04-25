@@ -3,12 +3,14 @@ const router = express.Router();
 const {
   seedSuperAdmin,
   loginController,
-  logoutController
+  logoutController,
+  sessionController
 } = require('../controllers/auth.controller');
 const { validateOrigin } = require('../middlewares/origin.middleware');
 const { loginRateLimiter } = require('../middlewares/timeLimit.middleware');
 
 router.post('/seed-superadmin', validateOrigin, seedSuperAdmin);
+router.get('/session', sessionController);
 router.post('/login', validateOrigin, loginRateLimiter, loginController);
 router.post('/logout', validateOrigin, logoutController);
 
