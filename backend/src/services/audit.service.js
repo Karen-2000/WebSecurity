@@ -3,6 +3,7 @@ const pool = require('../config/db');
 const getAuditLogs = async ({
   eventType,
   userId,
+  ipAddress,
   dateFrom,
   dateTo,
   limit = 100
@@ -36,6 +37,11 @@ const getAuditLogs = async ({
   if (userId) {
     query += ` AND user_id = $${index++}`;
     values.push(userId);
+  }
+
+  if (ipAddress) {
+    query += ` AND ip_address ILIKE $${index++}`;
+    values.push(`%${ipAddress}%`);
   }
 
   if (dateFrom) {

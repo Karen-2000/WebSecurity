@@ -452,6 +452,7 @@ Filtros opcionales por query:
 
 - `event_type`
 - `user_id`
+- `ip_address`
 - `date_from`
 - `date_to`
 - `limit`
@@ -462,12 +463,21 @@ Ejemplo:
 GET /api/audit-logs?event_type=LOGIN_SUCCESS&limit=50
 ```
 
+Ejemplo con filtro por IP local:
+
+```http
+GET /api/audit-logs?ip_address=127.0.0.1&limit=50
+```
+
 Validaciones:
 
 - `limit` debe estar entre `1` y `500`
 - `user_id` debe ser un UUID valido
+- `ip_address` no puede superar 45 caracteres
 - `date_from` y `date_to` deben ser fechas validas
 - `date_from` no puede ser mayor que `date_to`
+
+En pruebas locales, las direcciones loopback IPv6 (`::1` o `::ffff:127.0.0.1`) se normalizan y muestran como `127.0.0.1`.
 
 ## Seguridad implementada
 

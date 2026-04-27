@@ -16,6 +16,7 @@ export interface AuditLog {
 export interface AuditFilters {
   event_type?: string;
   user_id?: string;
+  ip_address?: string;
   date_from?: string;
   date_to?: string;
   limit?: number;

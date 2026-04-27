@@ -1,5 +1,17 @@
 const pool = require('../config/db');
 
+const normalizeIpAddress = (ipAddress) => {
+  if (ipAddress === '::1') {
+    return '127.0.0.1';
+  }
+
+  if (typeof ipAddress === 'string' && ipAddress.startsWith('::ffff:')) {
+    return ipAddress.replace('::ffff:', '');
+  }
+
+  return ipAddress;
+};
+
 const registerAuditEvent = async ({
   userId = null,
   eventType,
@@ -25,7 +37,7 @@ const registerAuditEvent = async ({
       entityId,
       route,
       method,
-      ipAddress,
+      normalizeIpAddress(ipAddress),
       userAgent,
       statusCode,
       details

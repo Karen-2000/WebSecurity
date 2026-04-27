@@ -5,7 +5,7 @@ import { User } from '../../../users/models/user.model';
 import { AuditService } from '../../data-access/audit.service';
 import { AuditFilters, AuditLog } from '../../models/audit-log.model';
 
-type AuditFilterKey = 'event_type' | 'user_id' | 'date_from' | 'date_to';
+type AuditFilterKey = 'event_type' | 'user_id' | 'ip_address' | 'date_from' | 'date_to';
 type AuditFilterValue = string | number | null;
 
 @Component({
@@ -29,6 +29,7 @@ export class AuditPageComponent implements OnInit {
   filters = {
     event_type: '',
     user_id: '',
+    ip_address: '',
     date_from: '',
     date_to: '',
     limit: 100
@@ -84,6 +85,10 @@ export class AuditPageComponent implements OnInit {
       filters.user_id = this.filters.user_id;
     }
 
+    if (this.filters.ip_address) {
+      filters.ip_address = this.filters.ip_address;
+    }
+
     if (this.filters.date_from) {
       filters.date_from = this.filters.date_from;
     }
@@ -111,6 +116,10 @@ export class AuditPageComponent implements OnInit {
       }
 
       if (this.filters.user_id && log.user_id !== this.filters.user_id) {
+        return false;
+      }
+
+      if (this.filters.ip_address && !log.ip_address?.includes(this.filters.ip_address)) {
         return false;
       }
 
@@ -180,6 +189,7 @@ export class AuditPageComponent implements OnInit {
     this.filters = {
       event_type: '',
       user_id: '',
+      ip_address: '',
       date_from: '',
       date_to: '',
       limit: 100
@@ -197,6 +207,22 @@ export class AuditPageComponent implements OnInit {
 
   formatDetails(details: Record<string, unknown> | null): string {
     return details ? JSON.stringify(details) : 'Sin detalles';
+  }
+
+  formatIpAddress(ipAddress: string | null): string {
+    if (!ipAddress) {
+      return '-';
+    }
+
+    if (ipAddress === '::1') {
+      return '127.0.0.1';
+    }
+
+    if (ipAddress.startsWith('::ffff:')) {
+      return ipAddress.replace('::ffff:', '');
+    }
+
+    return ipAddress;
   }
 
   private isUnauthorizedError(error: any): boolean {

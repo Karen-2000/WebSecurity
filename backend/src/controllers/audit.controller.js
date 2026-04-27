@@ -26,6 +26,7 @@ const buildEndOfDay = (value) => {
 
 const validateAuditFilters = ({
   user_id,
+  ip_address,
   date_from,
   date_to,
   limit
@@ -41,6 +42,14 @@ const validateAuditFilters = ({
   if (user_id !== undefined && !UUID_REGEX.test(user_id)) {
     return {
       error: 'user_id debe ser un UUID valido'
+    };
+  }
+
+  const normalizedIpAddress = typeof ip_address === 'string' ? ip_address.trim() : '';
+
+  if (normalizedIpAddress.length > 45) {
+    return {
+      error: 'ip_address no puede superar 45 caracteres'
     };
   }
 
@@ -68,6 +77,7 @@ const validateAuditFilters = ({
   return {
     filters: {
       userId: user_id,
+      ipAddress: normalizedIpAddress || undefined,
       dateFrom: date_from,
       dateTo,
       limit: normalizedLimit
@@ -80,6 +90,7 @@ const getAuditLogsController = async (req, res) => {
     const {
       event_type,
       user_id,
+      ip_address,
       date_from,
       date_to,
       limit
@@ -87,6 +98,7 @@ const getAuditLogsController = async (req, res) => {
 
     const { error, filters } = validateAuditFilters({
       user_id,
+      ip_address,
       date_from,
       date_to,
       limit
@@ -101,6 +113,7 @@ const getAuditLogsController = async (req, res) => {
     const logs = await getAuditLogs({
       eventType: event_type,
       userId: filters.userId,
+      ipAddress: filters.ipAddress,
       dateFrom: filters.dateFrom,
       dateTo: filters.dateTo,
       limit: filters.limit

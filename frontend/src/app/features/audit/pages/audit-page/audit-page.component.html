@@ -46,6 +46,11 @@
       </label>
 
       <label>
+        <span>IP</span>
+        <input name="ip_address" type="text" maxlength="45" [value]="filters.ip_address" (input)="onFilterChange('ip_address', $any($event.target).value)" />
+      </label>
+
+      <label>
         <span>Fecha desde</span>
         <input name="date_from" type="date" [value]="filters.date_from" (change)="onFilterChange('date_from', $any($event.target).value)" />
       </label>
@@ -76,6 +81,7 @@
           <th>Evento</th>
           <th>Entidad</th>
           <th>Metodo</th>
+          <th>IP</th>
           <th>Estado</th>
           <th>Ruta</th>
           <th>Detalles</th>
@@ -88,6 +94,7 @@
           <td>{{ log.event_type }}</td>
           <td>{{ log.entity_type }} {{ log.entity_id || '' }}</td>
           <td>{{ log.method }}</td>
+          <td>{{ formatIpAddress(log.ip_address) }}</td>
           <td>{{ log.status_code || '-' }}</td>
           <td>{{ log.route }}</td>
           <td>{{ formatDetails(log.details) }}</td>

@@ -116,7 +116,7 @@ Modulos expuestos:
 - `cors` con credenciales
 - Validacion de `Origin/Referer` en rutas sensibles
 - Autorizacion por rol
-- Registro de auditoria de eventos criticos
+- Registro de auditoria de eventos criticos con IP
 - Rate limiting y bloqueo temporal por multiples intentos fallidos
 
 ## Objetivo del proyecto
